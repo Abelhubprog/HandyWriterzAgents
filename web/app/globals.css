@@ -1,0 +1,477 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: var(--font-size, 16px);
+    line-height: var(--line-height, 1.6);
+  }
+}
+
+/* Focus Mode Styles */
+.focus-mode .sidebar,
+.focus-mode .param-panel,
+.focus-mode .timeline-panel {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.focus-mode .main-content {
+  width: 100% !important;
+  max-width: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.focus-mode .focus-mode-toggle {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  z-index: 50;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-left: none;
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.focus-mode .focus-mode-toggle:hover {
+  transform: translateY(-50%) translateX(0.25rem);
+}
+
+/* Distraction-free mode */
+.distraction-free .header,
+.distraction-free .footer,
+.distraction-free .sidebar-ads,
+.distraction-free .notification-banners {
+  display: none;
+}
+
+/* Enhanced Animation Keyframes */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes slide-in-right {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-out-right {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Custom scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--border) / 0.8);
+}
+
+/* Enhanced hover effects */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px hsl(var(--foreground) / 0.1);
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced focus styles */
+.focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.8) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 20%;
+    --muted: 0 0% 90%;
+  }
+  
+  .dark {
+    --border: 0 0% 80%;
+    --muted: 0 0% 10%;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .mobile-bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: hsl(var(--background));
+    border-radius: 1rem 1rem 0 0;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 50;
+  }
+  
+  .mobile-bottom-sheet.open {
+    transform: translateY(0);
+  }
+  
+  .mobile-swipe-handle {
+    width: 2rem;
+    height: 0.25rem;
+    background: hsl(var(--muted-foreground));
+    border-radius: 0.125rem;
+    margin: 0.75rem auto 0;
+  }
+}
+
+/* Text selection */
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary-foreground));
+}
+
+/* Dyslexia-friendly fonts */
+.dyslexia-friendly {
+  font-family: "OpenDyslexic", "Comic Sans MS", cursive, sans-serif;
+  letter-spacing: 0.12em;
+  word-spacing: 0.16em;
+  line-height: 1.8;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground));
+}
+
+/* Academic writing specific styles */
+.academic-content {
+  @apply max-w-none;
+}
+
+.academic-content h1 {
+  @apply text-2xl font-bold mb-4 text-foreground;
+}
+
+.academic-content h2 {
+  @apply text-xl font-semibold mb-3 mt-6 text-foreground;
+}
+
+.academic-content h3 {
+  @apply text-lg font-medium mb-2 mt-4 text-foreground;
+}
+
+.academic-content p {
+  @apply mb-4 leading-relaxed text-foreground;
+}
+
+.academic-content ul,
+.academic-content ol {
+  @apply mb-4 pl-6;
+}
+
+.academic-content li {
+  @apply mb-2;
+}
+
+.academic-content blockquote {
+  @apply border-l-4 border-primary pl-4 italic my-4 text-muted-foreground;
+}
+
+.academic-content code {
+  @apply bg-muted px-1 py-0.5 rounded text-sm font-mono;
+}
+
+.academic-content pre {
+  @apply bg-muted p-4 rounded-lg overflow-x-auto my-4;
+}
+
+/* Citation styles */
+.citation {
+  @apply text-primary hover:underline cursor-pointer;
+}
+
+.citation-popup {
+  @apply bg-popover border border-border rounded-lg p-3 shadow-lg max-w-sm;
+}
+
+/* Progress indicators */
+.progress-step {
+  @apply flex items-center space-x-2 p-2 rounded-lg transition-colors;
+}
+
+.progress-step.active {
+  @apply bg-primary/10 text-primary;
+}
+
+.progress-step.completed {
+  @apply bg-green-50 text-green-700;
+}
+
+.progress-step.pending {
+  @apply text-muted-foreground;
+}
+
+/* File upload styles */
+.upload-zone {
+  @apply border-2 border-dashed border-border rounded-lg p-8 text-center transition-colors;
+}
+
+.upload-zone.drag-over {
+  @apply border-primary bg-primary/5;
+}
+
+/* Chat message styles */
+.message-user {
+  @apply bg-primary text-primary-foreground ml-auto max-w-[80%];
+}
+
+.message-assistant {
+  @apply bg-muted text-foreground mr-auto max-w-[85%];
+}
+
+.message-system {
+  @apply bg-secondary text-secondary-foreground mx-auto max-w-[70%] text-center;
+}
+
+/* Animation for typing indicator */
+.typing-indicator {
+  @apply flex space-x-1;
+}
+
+.typing-dot {
+  @apply w-2 h-2 bg-muted-foreground rounded-full animate-pulse;
+  animation-delay: 0ms;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+/* Academic parameter panel styles */
+.param-panel {
+  @apply bg-card border border-border rounded-lg p-4 space-y-4;
+}
+
+.param-section {
+  @apply space-y-2;
+}
+
+.param-label {
+  @apply text-sm font-medium text-foreground;
+}
+
+.param-description {
+  @apply text-xs text-muted-foreground;
+}
+
+/* Loading states */
+.skeleton {
+  @apply animate-pulse bg-muted rounded;
+}
+
+.shimmer {
+  @apply relative overflow-hidden;
+}
+
+.shimmer::before {
+  @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent;
+  content: '';
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive typography */
+@media (max-width: 640px) {
+  .academic-content {
+    @apply text-sm;
+  }
+  
+  .academic-content h1 {
+    @apply text-xl;
+  }
+  
+  .academic-content h2 {
+    @apply text-lg;
+  }
+  
+  .academic-content h3 {
+    @apply text-base;
+  }
+}
+
+/* Print styles for academic documents */
+@media print {
+  .no-print {
+    @apply hidden;
+  }
+  
+  .academic-content {
+    @apply text-black;
+  }
+  
+  .academic-content h1,
+  .academic-content h2,
+  .academic-content h3 {
+    @apply text-black;
+  }
+  
+  .page-break {
+    page-break-before: always;
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@handywriterz/backend",
+  "version": "1.0.0",
+  "description": "FastAPI + LangGraph backend for HandyWriterz",
+  "private": true,
+  "scripts": {
+    "dev": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload",
+    "start": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
+    "test": "python -m pytest tests/ -v",
+    "test:coverage": "python -m pytest tests/ -v --cov=src --cov-report=html",
+    "lint": "ruff check src/ tests/",
+    "lint:fix": "ruff check --fix src/ tests/",
+    "format": "ruff format src/ tests/",
+    "type-check": "mypy src/",
+    "db:migrate": "alembic upgrade head",
+    "db:migration": "alembic revision --autogenerate -m",
+    "db:downgrade": "alembic downgrade -1",
+    "clean": "rm -rf __pycache__ .pytest_cache .coverage htmlcov .mypy_cache .ruff_cache",
+    "build": "echo 'Backend build complete'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

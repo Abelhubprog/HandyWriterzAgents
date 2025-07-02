@@ -1,0 +1,38 @@
+{
+  "name": "handywriterz",
+  "version": "1.0.0",
+  "description": "AI-Powered Academic Writing Assistant",
+  "private": true,
+  "workspaces": [
+    "web",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "pnpm run dev:backend & pnpm run dev:web",
+    "dev:web": "pnpm --filter web dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "build": "pnpm --filter web build && pnpm --filter backend build",
+    "build:web": "pnpm --filter web build",
+    "build:backend": "pnpm --filter backend build",
+    "test": "pnpm --filter web test && pnpm --filter backend test",
+    "test:web": "pnpm --filter web test",
+    "test:backend": "pnpm --filter backend test",
+    "lint": "pnpm --filter web lint && pnpm --filter backend lint",
+    "lint:fix": "pnpm --filter web lint:fix && pnpm --filter backend lint:fix",
+    "clean": "pnpm --filter web clean && pnpm --filter backend clean && rm -rf node_modules",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "db:migrate": "pnpm --filter backend db:migrate",
+    "db:seed": "pnpm --filter backend db:seed"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^2.2.3",
+    "turbo": "^2.2.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.6"
+}
