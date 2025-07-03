@@ -9,7 +9,7 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import Dict, Any, Optional, List
 
-import redis
+import redis.asyncio as redis
 import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,13 +20,18 @@ from pydantic import BaseModel
 from agent.handywriterz_graph import handywriterz_graph
 from agent.handywriterz_state import HandyWriterzState
 from agent.base import UserParams
+from db.database import (
+    get_database, get_user_repository, get_conversation_repository, 
+    get_document_repository, db_manager
+)
+from db.models import User, Conversation, Document
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Redis client for SSE
-redis_client = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"), decode_responses=True)
+# Async Redis client for SSE
+redis_client = redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"), decode_responses=True)
 
 
 @asynccontextmanager
@@ -36,14 +41,28 @@ async def lifespan(app: FastAPI):
     
     # Test Redis connection
     try:
-        redis_client.ping()
+        await redis_client.ping()
         logger.info("Redis connection successful")
     except Exception as e:
         logger.error(f"Redis connection failed: {e}")
     
+    # Test Database connection
+    try:
+        if db_manager.health_check():
+            logger.info("Database connection successful")
+        else:
+            logger.error("Database health check failed")
+    except Exception as e:
+        logger.error(f"Database connection failed: {e}")
+    
     yield
     
     logger.info("Shutting down HandyWriterz backend...")
+    # Close database connections
+    try:
+        db_manager.close()
+    except Exception as e:
+        logger.error(f"Error closing database: {e}")
 
 
 # Create FastAPI app
@@ -101,11 +120,25 @@ async def health_check():
 
 # Main writing endpoint
 @app.post("/api/write", response_model=WritingResponse)
-async def start_writing(request: WritingRequest):
-    """Start the academic writing process."""
+async def start_writing(
+    request: WritingRequest,
+    user_repo=Depends(get_user_repository),
+    conversation_repo=Depends(get_conversation_repository)
+):
+    """Start the academic writing process with database integration."""
     try:
-        # Generate conversation ID
-        conversation_id = str(uuid.uuid4())
+        # Create or get user from wallet address
+        user = None
+        if request.auth_token:  # If user is authenticated
+            # Extract wallet address from auth token (simplified)
+            wallet_address = request.auth_token  # Placeholder - implement proper JWT parsing
+            user = user_repo.get_user_by_wallet(wallet_address)
+            if not user:
+                user = user_repo.create_user(
+                    wallet_address=wallet_address,
+                    user_type="student",
+                    subscription_tier="free"
+                )
         
         # Validate user parameters
         try:
@@ -113,11 +146,21 @@ async def start_writing(request: WritingRequest):
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Invalid user parameters: {e}")
         
+        # Create conversation in database
+        conversation = conversation_repo.create_conversation(
+            user_id=str(user.id) if user else None,
+            user_params=user_params.dict(),
+            title=f"{user_params.writeupType.title()} - {user_params.field.title()}",
+            workflow_status="initiated"
+        )
+        
+        conversation_id = str(conversation.id)
+        
         # Create initial state
         initial_state = HandyWriterzState(
             conversation_id=conversation_id,
-            user_id="",  # Will be set by user_intent node
-            wallet_address=None,
+            user_id=str(user.id) if user else "",
+            wallet_address=user.wallet_address if user else None,
             messages=[HumanMessage(content=request.prompt)],
             user_params=user_params.dict(),
             uploaded_docs=[],
@@ -138,7 +181,7 @@ async def start_writing(request: WritingRequest):
             learning_outcomes_report=None,
             download_urls={},
             current_node=None,
-            workflow_status="pending",
+            workflow_status="initiated",
             error_message=None,
             retry_count=0,
             max_iterations=5,
@@ -157,7 +200,7 @@ async def start_writing(request: WritingRequest):
         return WritingResponse(
             conversation_id=conversation_id,
             status="started",
-            message="Academic writing process initiated. Connect to the stream endpoint for real-time updates."
+            message="Revolutionary academic writing process initiated. Connect to the stream endpoint for real-time updates."
         )
         
     except Exception as e:
@@ -186,8 +229,8 @@ async def stream_updates(conversation_id: str):
             async for message in pubsub.listen():
                 if message["type"] == "message":
                     try:
-                        # Parse the message data safely
-                        event_data = json.loads(message["data"])  # Fixed security vulnerability
+                        # Parse the message data safely - SECURITY FIX
+                        event_data = json.loads(message["data"])
                         yield f"data: {json.dumps(event_data)}\n\n"
                         
                         # Break if workflow is complete or failed
@@ -340,9 +383,9 @@ async def execute_writing_workflow(conversation_id: str, initial_state: HandyWri
         logger.info(f"Starting workflow for conversation: {conversation_id}")
         
         # Broadcast workflow start
-        redis_client.publish(
+        await redis_client.publish(
             f"sse:{conversation_id}",
-            str({
+            json.dumps({
                 "type": "workflow_start",
                 "timestamp": time.time(),
                 "data": {"conversation_id": conversation_id}
@@ -354,9 +397,9 @@ async def execute_writing_workflow(conversation_id: str, initial_state: HandyWri
         
         async for chunk in handywriterz_graph.astream(initial_state, config):
             # Broadcast workflow progress
-            redis_client.publish(
+            await redis_client.publish(
                 f"sse:{conversation_id}",
-                str({
+                json.dumps({
                     "type": "workflow_progress", 
                     "timestamp": time.time(),
                     "data": chunk
@@ -364,9 +407,9 @@ async def execute_writing_workflow(conversation_id: str, initial_state: HandyWri
             )
         
         # Broadcast workflow completion
-        redis_client.publish(
+        await redis_client.publish(
             f"sse:{conversation_id}",
-            str({
+            json.dumps({
                 "type": "workflow_complete",
                 "timestamp": time.time(),
                 "data": {"conversation_id": conversation_id, "status": "completed"}
@@ -379,9 +422,9 @@ async def execute_writing_workflow(conversation_id: str, initial_state: HandyWri
         logger.error(f"Workflow execution failed for {conversation_id}: {e}")
         
         # Broadcast workflow failure
-        redis_client.publish(
+        await redis_client.publish(
             f"sse:{conversation_id}",
-            str({
+            json.dumps({
                 "type": "workflow_failed",
                 "timestamp": time.time(),
                 "data": {"conversation_id": conversation_id, "error": str(e)}

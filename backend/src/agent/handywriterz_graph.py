@@ -19,14 +19,16 @@ from agent.nodes.memory_writer import MemoryWriterNode
 from agent.nodes.master_orchestrator import MasterOrchestratorAgent
 from agent.nodes.enhanced_user_intent import EnhancedUserIntentAgent
 
-# Import other nodes when they're created
-# from agent.nodes.search_o3 import O3SearchNode
-# from agent.nodes.search_claude import ClaudeSearchNode
+# Revolutionary sophisticated agents
+from agent.nodes.search_o3_advanced import revolutionary_o3_search_node
+from agent.nodes.search_claude_advanced import revolutionary_claude_search_node
+from agent.nodes.evaluator_advanced import revolutionary_evaluator_node
+from agent.nodes.turnitin_advanced import revolutionary_turnitin_node
+from agent.nodes.formatter_advanced import revolutionary_formatter_node
+from agent.nodes.fail_handler_advanced import revolutionary_fail_handler_node
+
+# Existing workflow nodes
 from agent.nodes.source_filter import SourceFilterNode
-# from agent.nodes.evaluator import EvaluatorNode
-# from agent.nodes.turnitin_loop import TurnitinLoopNode
-# from agent.nodes.formatter import FormatterNode
-# from agent.nodes.fail_handler import FailHandlerNode
 
 load_dotenv()
 
@@ -58,14 +60,16 @@ class HandyWriterzOrchestrator:
         self.writer_node = WriterNode()
         self.memory_writer_node = MemoryWriterNode()
         
-        # Initialize other nodes when they're implemented
-        # self.o3_search_node = O3SearchNode()
-        # self.claude_search_node = ClaudeSearchNode()
+        # Revolutionary sophisticated agents
+        self.o3_search_node = revolutionary_o3_search_node
+        self.claude_search_node = revolutionary_claude_search_node
+        self.evaluator_node = revolutionary_evaluator_node
+        self.turnitin_loop_node = revolutionary_turnitin_node
+        self.formatter_node = revolutionary_formatter_node
+        self.fail_handler_node = revolutionary_fail_handler_node
+        
+        # Existing workflow nodes
         self.source_filter_node = SourceFilterNode()
-        # self.evaluator_node = EvaluatorNode()
-        # self.turnitin_loop_node = TurnitinLoopNode()
-        # self.formatter_node = FormatterNode()
-        # self.fail_handler_node = FailHandlerNode()
     
     def create_graph(self) -> StateGraph:
         """Create the LangGraph state graph for the workflow."""
@@ -81,15 +85,17 @@ class HandyWriterzOrchestrator:
         builder.add_node("user_intent", self._execute_user_intent)
         builder.add_node("planner", self._execute_planner)
         builder.add_node("search_perplexity", self._execute_perplexity_search)
-        # builder.add_node("search_o3", self._execute_o3_search)
-        # builder.add_node("search_claude", self._execute_claude_search)
+        
+        # Add revolutionary sophisticated agents
+        builder.add_node("search_o3_advanced", self._execute_o3_search)
+        builder.add_node("search_claude_advanced", self._execute_claude_search)
         builder.add_node("source_filter", self._execute_source_filter)
         builder.add_node("writer", self._execute_writer)
+        builder.add_node("evaluator_advanced", self._execute_evaluator)
+        builder.add_node("turnitin_advanced", self._execute_turnitin_loop)
+        builder.add_node("formatter_advanced", self._execute_formatter)
         builder.add_node("memory_writer", self._execute_memory_writer)
-        # builder.add_node("evaluator", self._execute_evaluator)
-        # builder.add_node("turnitin_loop", self._execute_turnitin_loop)
-        # builder.add_node("formatter", self._execute_formatter)
-        # builder.add_node("fail_handler", self._execute_fail_handler)
+        builder.add_node("fail_handler_advanced", self._execute_fail_handler)
         
         # Define the workflow edges
         self._add_workflow_edges(builder)
@@ -115,24 +121,50 @@ class HandyWriterzOrchestrator:
         # 📊 Legacy user intent fallback
         builder.add_edge("user_intent", "planner")
         
-        # After planning, trigger parallel search agents
+        # After planning, trigger parallel sophisticated search agents
         builder.add_conditional_edges(
             "planner",
             self._route_to_search_agents,
-            ["search_perplexity"]  # Will expand to include all search agents
+            ["search_perplexity", "search_o3_advanced", "search_claude_advanced"]
         )
         
-        # From search to source filter
+        # From all searches to source filter (sophisticated aggregation)
         builder.add_edge("search_perplexity", "source_filter")
+        builder.add_edge("search_o3_advanced", "source_filter")
+        builder.add_edge("search_claude_advanced", "source_filter")
         
         # From source filter to writer
         builder.add_edge("source_filter", "writer")
         
-        # From writer to memory writer for fingerprint storage
-        builder.add_edge("writer", "memory_writer")
+        # From writer to advanced evaluation
+        builder.add_edge("writer", "evaluator_advanced")
         
-        # Complete workflow (will expand with evaluation and formatting)
+        # Conditional routing after evaluation
+        builder.add_conditional_edges(
+            "evaluator_advanced",
+            self._route_after_evaluation,
+            ["writer", "turnitin_advanced", "fail_handler_advanced"]
+        )
+        
+        # From Turnitin to conditional routing
+        builder.add_conditional_edges(
+            "turnitin_advanced",
+            self._route_after_turnitin,
+            ["writer", "formatter_advanced", "fail_handler_advanced"]
+        )
+        
+        # From formatter to memory writer for fingerprint storage
+        builder.add_edge("formatter_advanced", "memory_writer")
+        
+        # Complete workflow
         builder.add_edge("memory_writer", END)
+        
+        # Fail handler routes back to appropriate recovery
+        builder.add_conditional_edges(
+            "fail_handler_advanced",
+            self._route_from_fail_handler,
+            ["writer", "search_perplexity", END]
+        )
         
         # TODO: Add more sophisticated routing when all nodes are implemented
         # builder.add_conditional_edges(
@@ -225,6 +257,61 @@ class HandyWriterzOrchestrator:
         except Exception as e:
             return await self._handle_node_error(state, "memory_writer", e)
     
+    # Revolutionary sophisticated agent execution methods
+    async def _execute_o3_search(self, state: HandyWriterzState, config: RunnableConfig) -> Dict[str, Any]:
+        """Execute revolutionary O3 search agent."""
+        try:
+            result = await self.o3_search_node(state, config)
+            return {**result, "current_node": "search_o3_advanced"}
+        except Exception as e:
+            return await self._handle_node_error(state, "search_o3_advanced", e)
+    
+    async def _execute_claude_search(self, state: HandyWriterzState, config: RunnableConfig) -> Dict[str, Any]:
+        """Execute revolutionary Claude search agent."""
+        try:
+            result = await self.claude_search_node(state, config)
+            return {**result, "current_node": "search_claude_advanced"}
+        except Exception as e:
+            return await self._handle_node_error(state, "search_claude_advanced", e)
+    
+    async def _execute_evaluator(self, state: HandyWriterzState, config: RunnableConfig) -> Dict[str, Any]:
+        """Execute revolutionary multi-model evaluator."""
+        try:
+            result = await self.evaluator_node(state, config)
+            return {**result, "current_node": "evaluator_advanced"}
+        except Exception as e:
+            return await self._handle_node_error(state, "evaluator_advanced", e)
+    
+    async def _execute_turnitin_loop(self, state: HandyWriterzState, config: RunnableConfig) -> Dict[str, Any]:
+        """Execute revolutionary Turnitin agent."""
+        try:
+            result = await self.turnitin_loop_node(state, config)
+            return {**result, "current_node": "turnitin_advanced"}
+        except Exception as e:
+            return await self._handle_node_error(state, "turnitin_advanced", e)
+    
+    async def _execute_formatter(self, state: HandyWriterzState, config: RunnableConfig) -> Dict[str, Any]:
+        """Execute revolutionary document formatter."""
+        try:
+            result = await self.formatter_node(state, config)
+            return {**result, "current_node": "formatter_advanced"}
+        except Exception as e:
+            return await self._handle_node_error(state, "formatter_advanced", e)
+    
+    async def _execute_fail_handler(self, state: HandyWriterzState, config: RunnableConfig) -> Dict[str, Any]:
+        """Execute revolutionary fail handler."""
+        try:
+            result = await self.fail_handler_node(state, config)
+            return {**result, "current_node": "fail_handler_advanced"}
+        except Exception as e:
+            # Meta-failure handling
+            return {
+                "workflow_status": "critical_failure",
+                "error_message": f"Fail handler failed: {str(e)}",
+                "current_node": "critical_failure",
+                "escalation_required": True
+            }
+    
     # Revolutionary Routing functions
     def _route_from_orchestrator(self, state: HandyWriterzState) -> str:
         """Revolutionary routing from Master Orchestrator based on workflow intelligence."""
@@ -241,19 +328,15 @@ class HandyWriterzOrchestrator:
         else:
             return "user_intent"  # Fallback to legacy processing
     
-    # Legacy Routing functions  
+    # Revolutionary parallel routing  
     def _route_to_search_agents(self, state: HandyWriterzState) -> List[Send]:
-        """Route to parallel search agents."""
-        # For now, only route to Perplexity
-        # Will expand to include all search agents in parallel
-        return [Send("search_perplexity", state)]
-        
-        # Future implementation:
-        # return [
-        #     Send("search_perplexity", state),
-        #     Send("search_o3", state), 
-        #     Send("search_claude", state)
-        # ]
+        """Route to sophisticated parallel search agents."""
+        # Execute all search agents in parallel for maximum source diversity
+        return [
+            Send("search_perplexity", state),
+            Send("search_o3_advanced", state), 
+            Send("search_claude_advanced", state)
+        ]
     
     def _route_after_source_filter(self, state: HandyWriterzState) -> str:
         """Route after source filtering."""
@@ -265,28 +348,44 @@ class HandyWriterzOrchestrator:
         return "writer"
     
     def _route_after_evaluation(self, state: HandyWriterzState) -> str:
-        """Route after content evaluation."""
-        evaluation_score = state.get("evaluation_score", 0)
+        """Route after revolutionary evaluation."""
+        evaluation_result = state.get("comprehensive_evaluation", {})
+        evaluation_score = evaluation_result.get("overall_score", 0)
+        needs_revision = evaluation_result.get("needs_revision", True)
         revision_count = state.get("revision_count", 0)
         
-        if evaluation_score >= 90:
-            return "turnitin_loop"  # Good enough for plagiarism check
-        elif revision_count < 3:
-            return "writer"  # Needs revision
+        if evaluation_score >= 85 and not needs_revision:
+            return "turnitin_advanced"  # High quality, proceed to academic integrity check
+        elif revision_count < 3 and evaluation_score >= 60:
+            return "writer"  # Needs revision but recoverable
         else:
-            return "fail_handler"  # Too many revisions
+            return "fail_handler_advanced"  # Too many revisions or too low quality
     
     def _route_after_turnitin(self, state: HandyWriterzState) -> str:
-        """Route after Turnitin processing."""
+        """Route after revolutionary Turnitin processing."""
         turnitin_passed = state.get("turnitin_passed", False)
+        similarity_passed = state.get("similarity_passed", False)
+        ai_detection_passed = state.get("ai_detection_passed", False)
         revision_count = state.get("revision_count", 0)
         
-        if turnitin_passed:
-            return "formatter"  # Ready for final formatting
-        elif revision_count < 5:
-            return "writer"  # Needs revision for plagiarism
+        if turnitin_passed and similarity_passed and ai_detection_passed:
+            return "formatter_advanced"  # Perfect - ready for sophisticated formatting
+        elif revision_count < 4 and (similarity_passed or ai_detection_passed):
+            return "writer"  # Partially passed, needs targeted revision
         else:
-            return "fail_handler"  # Too many Turnitin failures
+            return "fail_handler_advanced"  # Failed academic integrity standards
+    
+    def _route_from_fail_handler(self, state: HandyWriterzState) -> str:
+        """Route from revolutionary fail handler based on recovery strategy."""
+        recovery_result = state.get("recovery_successful", False)
+        recovery_strategy = state.get("recovery_strategy", "")
+        
+        if recovery_result and "retry" in recovery_strategy.lower():
+            return "writer"  # Recovery successful, retry writing
+        elif recovery_result and "search" in recovery_strategy.lower():
+            return "search_perplexity"  # Recovery suggests new search
+        else:
+            return END  # Unrecoverable failure, end workflow
     
     # Helper methods
     def _convert_perplexity_to_search_format(self, perplexity_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
